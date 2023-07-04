@@ -126,3 +126,6 @@ cypress/videos/
 .data/
 
 ./temp_test.go
+
+# IDE
+.idea
