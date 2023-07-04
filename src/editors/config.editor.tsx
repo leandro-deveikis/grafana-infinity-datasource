@@ -12,6 +12,7 @@ import { URLEditor } from './config/URL';
 import { OpenAPIEditor } from './config/OpenAPI';
 import { ReferenceDataEditor } from './config/ReferenceData';
 import { CustomHealthCheckEditor } from './config/CustomHealthCheckEditor';
+import { SecureSocksProxyEditor } from './config/SecureSocksProxy';
 import type { DataSourcePluginOptionsEditorProps } from '@grafana/data/types';
 import type { InfinityOptions } from './../types';
 
@@ -134,6 +135,7 @@ export const MiscEditor = (props: DataSourcePluginOptionsEditorProps<InfinityOpt
   return (
     <>
       <URLEditor options={options} onOptionsChange={onOptionsChange} />
+      <SecureSocksProxyEditor options={options} onOptionsChange={onOptionsChange} />
     </>
   );
 };

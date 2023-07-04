@@ -46,6 +46,7 @@ export interface InfinityOptions extends DataSourceJsonData {
   openAPIBaseURL?: string;
   customHealthCheckEnabled?: boolean;
   customHealthCheckUrl?: string;
+  enableSecureSocksProxy?: boolean;
 }
 
 export interface InfinitySecureOptions {
