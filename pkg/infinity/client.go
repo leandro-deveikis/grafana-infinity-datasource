@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/grafana/grafana-plugin-sdk-go/backend/proxy"
+
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/yesoreyeram/grafana-infinity-datasource/pkg/models"
@@ -61,6 +63,17 @@ func getBaseHTTPClient(settings models.InfinitySettings) *http.Client {
 		Proxy:           http.ProxyFromEnvironment,
 		TLSClientConfig: tlsConfig,
 	}
+
+	// enable configure PDC if enabled
+	if proxy.SecureSocksProxyEnabled(settings.HTTPClientOptions.ProxyOptions) {
+		backend.Logger.Info("Enabling PDC")
+		err := proxy.ConfigureSecureSocksHTTPProxy(transport, settings.HTTPClientOptions.ProxyOptions)
+		if err != nil {
+			backend.Logger.Error("Error configuring PDC", "error", err.Error())
+			return nil
+		}
+	}
+
 	return &http.Client{
 		Transport: transport,
 		Timeout:   time.Second * time.Duration(settings.TimeoutInSeconds),
@@ -81,10 +94,13 @@ func NewClient(settings models.InfinitySettings) (client *Client, err error) {
 	if httpClient == nil {
 		return nil, errors.New("invalid http client")
 	}
-	httpClient = ApplyDigestAuth(httpClient, settings)
-	httpClient = ApplyOAuthClientCredentials(httpClient, settings)
-	httpClient = ApplyOAuthJWT(httpClient, settings)
-	httpClient = ApplyAWSAuth(httpClient, settings)
+
+	pdcEnabled := proxy.SecureSocksProxyEnabled(settings.HTTPClientOptions.ProxyOptions)
+
+	httpClient = ApplyDigestAuth(httpClient, settings, pdcEnabled)             // TODO LND needs to be reviewed
+	httpClient = ApplyOAuthClientCredentials(httpClient, settings, pdcEnabled) // TODO LND Test, it should work as it uses the transport from the http client
+	httpClient = ApplyOAuthJWT(httpClient, settings)                           // TODO LND Test, it should work as it uses the transport from the http client
+	httpClient = ApplyAWSAuth(httpClient, settings, pdcEnabled)                // TODO LND Test, it should work as it uses the transport from the http client
 	client = &Client{
 		Settings:   settings,
 		HttpClient: httpClient,

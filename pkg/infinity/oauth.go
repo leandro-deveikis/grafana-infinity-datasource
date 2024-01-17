@@ -15,7 +15,7 @@ import (
 	"github.com/yesoreyeram/grafana-infinity-datasource/pkg/models"
 )
 
-func ApplyOAuthClientCredentials(httpClient *http.Client, settings models.InfinitySettings) *http.Client {
+func ApplyOAuthClientCredentials(httpClient *http.Client, settings models.InfinitySettings, pdcEnabled bool) *http.Client {
 	if settings.AuthenticationMethod == models.AuthenticationMethodOAuth && settings.OAuth2Settings.OAuth2Type == models.AuthOAuthTypeClientCredentials {
 		oauthConfig := clientcredentials.Config{
 			ClientID:       settings.OAuth2Settings.ClientID,
@@ -39,6 +39,7 @@ func ApplyOAuthClientCredentials(httpClient *http.Client, settings models.Infini
 	}
 	return httpClient
 }
+
 func ApplyOAuthJWT(httpClient *http.Client, settings models.InfinitySettings) *http.Client {
 	if settings.AuthenticationMethod == models.AuthenticationMethodOAuth && settings.OAuth2Settings.OAuth2Type == models.AuthOAuthJWT {
 		jwtConfig := jwt.Config{
@@ -59,14 +60,19 @@ func ApplyOAuthJWT(httpClient *http.Client, settings models.InfinitySettings) *h
 	}
 	return httpClient
 }
-func ApplyDigestAuth(httpClient *http.Client, settings models.InfinitySettings) *http.Client {
+
+func ApplyDigestAuth(httpClient *http.Client, settings models.InfinitySettings, pdcEnabled bool) *http.Client {
 	if settings.AuthenticationMethod == models.AuthenticationMethodDigestAuth {
 		a := dac.NewTransport(settings.UserName, settings.Password)
+		//  if pdcEnabled {
+		//  	proxy.ConfigureSecureSocksHTTPProxy(a, settings.HTTPClientOptions.ProxyOptions)
+		//  }
 		httpClient.Transport = &a
 	}
 	return httpClient
 }
-func ApplyAWSAuth(httpClient *http.Client, settings models.InfinitySettings) *http.Client {
+
+func ApplyAWSAuth(httpClient *http.Client, settings models.InfinitySettings, pdcEnabled bool) *http.Client {
 	if settings.AuthenticationMethod == models.AuthenticationMethodAWS {
 		tempHttpClient := getBaseHTTPClient(settings)
 		authType := settings.AWSSettings.AuthType

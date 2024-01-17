@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/httpclient"
 )
 
 const (
@@ -91,6 +92,8 @@ type InfinitySettings struct {
 	ReferenceData            []RefData
 	CustomHealthCheckEnabled bool
 	CustomHealthCheckUrl     string
+	//TODO LND check this
+	HTTPClientOptions httpclient.Options
 }
 
 func (s *InfinitySettings) Validate() error {
@@ -242,6 +245,13 @@ func LoadSettings(config backend.DataSourceInstanceSettings) (settings InfinityS
 			settings.AuthenticationMethod = AuthenticationMethodForwardOauth
 		}
 	}
+
+	// TODO LND should we save it here?
+	opt, err := config.HTTPClientOptions()
+	if err != nil {
+		return settings, err
+	}
+	settings.HTTPClientOptions = opt
 	return
 }
 
